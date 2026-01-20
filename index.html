@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asthma Buddy - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap'); body { font-family: 'Kanit', sans-serif; }</style>
+</head>
+<body class="bg-gray-50 pb-24">
+
+    <header class="bg-orange-500 text-white p-4 text-center sticky top-0 z-50 shadow-md">
+        <h1 class="text-xl font-medium">Dashboard</h1>
+    </header>
+
+    <main class="p-6 max-w-md mx-auto">
+        <div class="bg-white rounded-3xl p-8 shadow-sm text-center mb-6">
+            <div class="inline-block relative">
+                <svg class="w-40 h-40 transform -rotate-90">
+                    <circle class="text-gray-100" stroke-width="12" stroke="currentColor" fill="transparent" r="70" cx="80" cy="80" />
+                    <circle class="text-orange-400" stroke-width="12" stroke-dasharray="440" stroke-dashoffset="180" stroke-linecap="round" stroke="currentColor" fill="transparent" r="70" cx="80" cy="80" />
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center rotate-80">
+                    <span class="text-5xl font-bold text-gray-800">43</span>
+                </div>
+            </div>
+            <p class="mt-4 text-gray-500 font-medium tracking-widest text-sm">PM 2.5 (AIR QUALITY)</p>
+            <p class="text-orange-500 text-xl font-bold mt-1">คุณภาพอากาศ: เริ่มมีผลต่อสุขภาพ</p>
+        </div>
+
+        <div class="bg-orange-50 rounded-2xl p-5 border-l-4 border-orange-400">
+            <h3 class="font-bold text-orange-800 flex items-center mb-1">
+                <i class="fa-solid fa-circle-exclamation mr-2"></i> คำแนะนำวันนี้
+            </h3>
+            <p class="text-sm text-orange-700 leading-relaxed">
+                ขณะนี้ค่าฝุ่นสูงกว่ามาตรฐาน แนะนำให้สวมหน้ากากอนามัย เมื่ออยู่กลางแจ้ง และจำกัดเวลาทำกิจกรรมที่ใช้แรงมาก
+            </p>
+        </div>
+    </main>
+
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex justify-around p-3 shadow-lg z-50">
+        <a href="index.html" class="flex flex-col items-center text-orange-500">
+            <i class="fa-solid fa-chart-line text-xl"></i>
+            <span class="text-[10px] mt-1 font-medium">Dashboard</span>
+        </a>
+        <a href="location.html" class="flex flex-col items-center text-gray-400">
+            <i class="fa-solid fa-location-dot text-xl"></i>
+            <span class="text-[10px] mt-1 font-medium">Location</span>
+        </a>
+    </nav>
+
+</body>
+</html>
