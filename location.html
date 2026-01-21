@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asthma Buddy - Search Pharmacy</title>
+    <title>Asthma Buddy - ค้นหาร้านยาแม่นยำสูง</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap'); body { font-family: 'Kanit', sans-serif; }</style>
@@ -14,93 +14,117 @@
     </header>
 
     <main class="p-4 max-w-md mx-auto">
-        <div class="mb-4 space-y-2">
-            <div class="relative">
-                <input type="text" id="manual-search" placeholder="พิมพ์ชื่อร้านยา/คลังยา" 
-                    class="w-full p-4 pl-12 rounded-2xl border-none shadow-md focus:ring-2 focus:ring-orange-400 outline-none text-sm">
-                <i class="fa-solid fa-store absolute left-4 top-4.5 text-orange-500 text-lg"></i>
+        <div class="mb-4 bg-white p-4 rounded-[2rem] shadow-sm border border-gray-100">
+            <div class="relative mb-3">
+                <input type="text" id="manual-search" placeholder="พิมพ์ชื่อร้าน หรือ ชื่อเขต..." 
+                    class="w-full p-4 pl-12 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-orange-400 text-sm">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-4 text-gray-400"></i>
             </div>
-            <button onclick="searchByName()" class="w-full bg-orange-600 text-white py-3 rounded-xl font-bold shadow-lg active:scale-95 transition">
-                <i class="fa-solid fa-magnifying-glass mr-2"></i> ค้นหาตอนนี้
+            <button onclick="handleManualSearch()" class="w-full bg-orange-500 text-white py-4 rounded-2xl font-bold shadow-lg shadow-orange-100 active:scale-95 transition">
+                ค้นหาตอนนี้
             </button>
         </div>
 
-        <div class="flex items-center my-6">
-            <div class="flex-grow border-t border-gray-300"></div>
-            <span class="px-3 text-gray-400 text-xs uppercase italic">หรือ</span>
-            <div class="flex-grow border-t border-gray-300"></div>
+        <div id="status-card" class="bg-white p-6 rounded-3xl shadow-sm mb-6 text-center border border-gray-50">
+            <div id="status-icon" class="bg-orange-100 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3 animate-pulse">
+                <i class="fa-solid fa-location-crosshairs text-2xl text-orange-500"></i>
+            </div>
+            <h2 id="status-title" class="font-bold text-gray-800 text-lg">กำลังระบุตำแหน่ง...</h2>
+            <p id="status-desc" class="text-xs text-gray-400 italic">คำนวณระยะทางตามแนวโค้งของโลกเพื่อความแม่นยำ</p>
         </div>
 
-        <button onclick="getLocationAndSearch()" class="w-full bg-white border-2 border-orange-500 text-orange-600 py-3 rounded-xl font-bold mb-6 active:scale-95 transition">
-            <i class="fa-solid fa-location-crosshairs mr-2"></i> ค้นหาจากตำแหน่งใกล้ตัว
-        </button>
-
-        <div id="status-text" class="text-center text-sm text-gray-500 mb-4 hidden"></div>
-        <div id="list" class="space-y-3">
+        <div id="pharmacy-list" class="space-y-4">
             </div>
     </main>
 
-    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex justify-around p-3 shadow-lg z-50">
-        <a href="index.html" class="flex flex-col items-center text-gray-400"><i class="fa-solid fa-chart-line text-xl"></i><span class="text-[10px] mt-1">Dashboard</span></a>
-        <a href="location.html" class="flex flex-col items-center text-orange-500"><i class="fa-solid fa-location-dot text-xl"></i><span class="text-[10px] mt-1">Location</span></a>
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex justify-around p-3 shadow-xl z-50">
+        <a href="index.html" class="flex flex-col items-center text-gray-400"><i class="fa-solid fa-chart-pie text-xl"></i><span class="text-[10px] mt-1 font-bold">DASHBOARD</span></a>
+        <a href="location.html" class="flex flex-col items-center text-orange-500"><i class="fa-solid fa-map-location-dot text-xl"></i><span class="text-[10px] mt-1 font-bold">LOCATION</span></a>
     </nav>
 
     <script>
-        // ฟังก์ชัน 1: ค้นหาด้วยชื่อที่พิมพ์
-        async function searchByName() {
-            const keyword = document.getElementById('manual-search').value;
-            if (!keyword) return alert("กรุณาพิมพ์ชื่อร้าน");
+        // 1. สูตรคำนวณระยะทางตามผิวโค้งของโลก (Haversine)
+        const calculateDistance = (lat1, lon1, lat2, lon2) => {
+            const R = 6371; // รัศมีโลก (กม.)
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        };
 
-            showLoading(true);
-            // Query ค้นหาจากชื่อร้านยาในประเทศไทย
-            const query = `[out:json];node["amenity"="pharmacy"]["name"~"${keyword}"](12.0,99.0,15.0,102.0);out;`;
-            fetchAndRender(query);
-        }
+        // 2. เริ่มต้นหาตำแหน่งอัตโนมัติเมื่อเปิดหน้า
+        window.onload = () => {
+            navigator.geolocation.getCurrentPosition(pos => fetchPharmacies(pos.coords.latitude, pos.coords.longitude), 
+            err => updateStatus("ไม่สามารถเข้าถึงตำแหน่งได้", "error"), {enableHighAccuracy: true});
+        };
 
-        // ฟังก์ชัน 2: ค้นหาจากพิกัด (เหมือนเดิม)
-        function getLocationAndSearch() {
-            showLoading(true);
-            navigator.geolocation.getCurrentPosition((pos) => {
-                const { latitude: lat, longitude: lon } = pos.coords;
-                const query = `[out:json];(node["amenity"="pharmacy"](around:5000,${lat},${lon});node["shop"="drugstore"](around:5000,${lat},${lon}););out;`;
-                fetchAndRender(query);
-            });
-        }
-
-        async function fetchAndRender(query) {
-            const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
+        // 3. ฟังก์ชันดึงข้อมูลและประมวลผลความแม่นยำสูง
+        async function fetchPharmacies(uLat, uLon, keyword = "") {
+            updateStatus("กำลังดึงข้อมูลร้านยา...", "loading");
+            
+            // Query แยกกรณีตาม keyword หรือตามพิกัด
+            const areaQuery = keyword ? `["name"~"${keyword}"](13.5,100.3,14.0,100.9)` : `(around:5000,${uLat},${uLon})`;
+            const query = `[out:json];(node["amenity"="pharmacy"]${areaQuery};node["shop"="drugstore"]${areaQuery};way["amenity"="pharmacy"]${areaQuery};);out center;`;
+            
             try {
-                const res = await fetch(url);
+                const res = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
                 const data = await res.json();
-                const shops = data.elements;
                 
-                if (shops.length === 0) {
-                    document.getElementById('list').innerHTML = `<p class="text-center text-gray-400 my-10">ไม่พบข้อมูลที่ระบุ ลองเปลี่ยนคำค้นหา</p>`;
-                } else {
-                    renderList(shops);
-                }
-            } catch (e) {
-                alert("การเชื่อมต่อขัดข้อง");
-            } finally {
-                showLoading(false);
-            }
+                // คำนวณระยะทางและเรียงลำดับจากใกล้ไปไกล
+                const items = data.elements.map(s => {
+                    const sLat = s.lat || s.center.lat;
+                    const sLon = s.lon || s.center.lon;
+                    return {
+                        name: s.tags.name || "ร้านขายยา",
+                        dist: calculateDistance(uLat, uLon, sLat, sLon),
+                        lat: sLat, lon: sLon,
+                        type: s.tags.shop ? 'คลังยา/ขายส่ง' : 'ร้านยา/เภสัช'
+                    };
+                }).sort((a, b) => a.dist - b.dist);
+
+                renderList(items);
+                updateStatus(`พบ ${items.length} แห่งในพื้นที่`, "success");
+            } catch (e) { updateStatus("เกิดข้อผิดพลาดในการโหลด", "error"); }
         }
 
-        function renderList(shops) {
-            document.getElementById('list').innerHTML = shops.map(s => `
-                <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 ${s.tags.shop ? 'border-blue-500' : 'border-green-500'} flex justify-between items-center">
-                    <div class="flex-1 pr-2">
-                        <h4 class="font-bold text-gray-800 text-sm">${s.tags.name || 'ร้านยา/เภสัช'}</h4>
-                        <p class="text-[10px] text-gray-500 mt-1 uppercase tracking-tighter">${s.tags.shop ? 'คลังยา' : 'ร้านยา/เภสัช'}</p>
+        // 4. ค้นหาด้วยชื่อร้าน/เขต
+        function handleManualSearch() {
+            const k = document.getElementById('manual-search').value;
+            if (k) navigator.geolocation.getCurrentPosition(p => fetchPharmacies(p.coords.latitude, p.coords.longitude, k));
+        }
+
+        // 5. แสดงผลรายการร้านยา
+        function renderList(items) {
+            const list = document.getElementById('pharmacy-list');
+            if (items.length === 0) {
+                list.innerHTML = `<p class="text-center text-gray-400 my-10 font-light">ไม่พบร้านยาในพื้นที่ที่ระบุ</p>`;
+                return;
+            }
+            list.innerHTML = items.map(i => `
+                <div class="bg-white p-5 rounded-[1.5rem] shadow-sm border-l-[6px] ${i.type.includes('คลัง') ? 'border-blue-500' : 'border-green-500'} flex justify-between items-center">
+                    <div class="flex-1 pr-4">
+                        <h4 class="font-bold text-gray-800 text-sm">${i.name}</h4>
+                        <p class="text-[11px] text-orange-500 font-bold mt-1 uppercase">ห่างจากคุณ ${i.dist.toFixed(2)} กม.</p>
+                        <p class="text-[10px] text-gray-400 mt-0.5">${i.type}</p>
                     </div>
-                    <button onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lon}')" class="bg-orange-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md">นำทาง</button>
+                    <button onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=${i.lat},${i.lon}')" 
+                        class="bg-orange-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-md active:scale-95 transition">นำทาง</button>
                 </div>
             `).join('');
         }
 
-        function showLoading(status) {
-            document.getElementById('status-text').classList.toggle('hidden', !status);
-            document.getElementById('status-text').innerText = status ? "กำลังค้นหาข้อมูล..." : "";
+        function updateStatus(title, type) {
+            const card = document.getElementById('status-card');
+            const icon = document.getElementById('status-icon');
+            document.getElementById('status-title').innerText = title;
+            
+            if (type === "success") {
+                icon.className = "bg-green-100 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3";
+                icon.innerHTML = '<i class="fa-solid fa-check text-green-500 text-2xl"></i>';
+            } else if (type === "error") {
+                icon.className = "bg-red-100 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3";
+                icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-red-500 text-2xl"></i>';
+            }
         }
     </script>
 </body>
