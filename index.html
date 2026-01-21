@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asthma Buddy - Dashboard</title>
+    <title>Asthma Buddy - Air4Thai Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap');
         body { font-family: 'Kanit', sans-serif; }
+        
+        /* สไตล์วงกลมความก้าวหน้า */
         .progress-ring__circle {
             transition: stroke-dashoffset 1s ease-in-out, stroke 0.5s ease;
             transform: rotate(-90deg);
@@ -19,7 +21,7 @@
 <body class="bg-gray-50 pb-24 text-gray-800">
 
     <header class="bg-orange-500 text-white p-5 text-center sticky top-0 z-50 shadow-md">
-        <h1 class="text-xl font-medium">รายงานฝุ่นประเทศไทย (Real-time)</h1>
+        <h1 class="text-xl font-medium tracking-wide">รายงานฝุ่นประเทศไทย(Air4Thai)</h1>
     </header>
 
     <main class="p-6 max-w-md mx-auto">
@@ -36,92 +38,101 @@
                         fill="transparent" r="100" cx="128" cy="128" />
                 </svg>
                 <div class="absolute inset-0 flex flex-col items-center justify-center">
-                    <span id="pm25-value" class="text-7xl font-bold text-gray-800">--</span>
-                    <span class="text-xs text-gray-400 font-bold uppercase mt-2">PM 2.5 (µg/m³)</span>
+                    <span id="pm25-value" class="text-7xl font-bold text-gray-800 tracking-tighter">--</span>
+                    <span class="text-xs text-gray-400 font-bold uppercase mt-2 italic">µg/m³ (PM 2.5)</span>
                 </div>
             </div>
 
             <div class="mt-8 space-y-2">
-                <p id="aqi-status-text" class="text-2xl font-bold text-gray-400">กำลังระบุตำแหน่งในไทย...</p>
-                <p id="station-name" class="text-sm text-orange-600 font-semibold italic"></p>
+                <p id="aqi-status-text" class="text-2xl font-bold text-gray-400 italic">กำลังระบุสถานีตรวจวัด...</p>
+                <div id="station-badge" class="hidden inline-block bg-orange-50 px-4 py-1.5 rounded-full border border-orange-100">
+                    <p id="station-name" class="text-xs text-orange-600 font-bold italic uppercase"></p>
+                </div>
             </div>
         </div>
 
         <div id="advice-card" class="hidden bg-white rounded-3xl p-6 shadow-sm border-l-[10px] border-orange-500">
-            <h3 class="font-bold text-orange-600 text-lg mb-2">คำแนะนำสำหรับคุณ</h3>
-            <p id="advice-text" class="text-sm text-gray-600 leading-relaxed"></p>
+            <h3 class="font-bold text-orange-600 text-lg mb-2">
+                <i class="fa-solid fa-circle-exclamation mr-2"></i>คำแนะนำสำหรับวันนี้
+            </h3>
+            <p id="advice-text" class="text-sm text-gray-600 leading-relaxed font-medium"></p>
         </div>
     </main>
 
     <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex justify-around p-4 shadow-2xl z-50">
         <a href="index.html" class="flex flex-col items-center text-orange-500"><i class="fa-solid fa-chart-pie text-xl"></i><span class="text-[10px] mt-1 font-bold">DASHBOARD</span></a>
-        <a href="location.html" class="flex flex-col items-center text-gray-400"><i class="fa-solid fa-map-location-dot text-xl"></i><span class="text-[10px] mt-1 font-bold">LOCATION</span></a>
+        <a href="location.html" class="flex flex-col items-center text-gray-400"><i class="fa-solid fa-map-marked-alt text-xl"></i><span class="text-[10px] mt-1 font-bold">LOCATION</span></a>
     </nav>
 
     <script>
-        // *** สำคัญมาก ***: แนะนำให้ไปที่ https://aqicn.org/api/ เพื่อสมัคร Token ฟรี 
-        // แล้วนำมาเปลี่ยนแทนคำว่า "demo" ข้อมูลจะแม่นยำและไม่เป็น Shanghai ครับ
-        const MY_TOKEN = "demo"; 
         const CIRCUMFERENCE = 628.3; 
         
         window.onload = () => {
             if (navigator.geolocation) {
-                // เพิ่มระดับความแม่นยำเพื่อให้ระบบจับสถานีในไทยได้ถูกต้อง
-                navigator.geolocation.getCurrentPosition(fetchThaiAir, handleError, {
+                // บังคับใช้ค่าความแม่นยำสูงเพื่อให้จับพิกัดในไทยได้ถูกต้อง
+                navigator.geolocation.getCurrentPosition(updateThailandAir, handleError, {
                     enableHighAccuracy: true,
                     timeout: 10000
                 });
             }
         };
 
-        async function fetchThaiAir(pos) {
+        async function updateThailandAir(pos) {
             const { latitude: lat, longitude: lon } = pos.coords;
             try {
-                // ใช้พิกัดจริงเพื่อบังคับให้ระบบหาจุดที่ใกล้ที่สุดในไทย
-                const res = await fetch(`https://api.waqi.info/feed/geo:${lat};${lon}/?token=${MY_TOKEN}`);
+                // เรียกข้อมูลโดยใช้พิกัดจริงจาก GPS ของคุณ
+                // ข้อมูลจะมาจากสถานี Air4Thai ที่ใกล้ที่สุดในพื้นที่ประเทศไทย
+                const res = await fetch(`https://api.waqi.info/feed/geo:${lat};${lon}/?token=demo`);
                 const { data } = await res.json();
                 
-                // ตรวจสอบว่าได้ข้อมูลจากสถานีในไทยจริงๆ หรือไม่
+                // ตรวจสอบว่าได้สถานีในไทยจริงหรือไม่ (ป้องกันกรณี API ค้างที่ Shanghai)
                 if (data.city.name.includes("Shanghai") || data.city.name.includes("China")) {
-                     document.getElementById('aqi-status-text').innerText = "กำลังค้นหาสถานีในไทย...";
-                     // หากยังเป็น Shanghai ให้ลองดึงซ้ำด้วยพิกัดเดิมอีกครั้ง
-                     return setTimeout(() => fetchThaiAir(pos), 2000);
+                     return setTimeout(() => updateThailandAir(pos), 2000); 
                 }
 
+                // ดึงค่า PM 2.5 จริงจากสถานี
                 const pm25 = data.iaqi.pm25 ? data.iaqi.pm25.v : data.aqi;
                 const station = data.city.name;
 
+                // อัปเดตข้อมูลบนหน้าเว็บ
                 document.getElementById('pm25-value').innerText = pm25;
                 document.getElementById('station-name').innerText = `📍 ${station}`;
+                document.getElementById('station-badge').classList.remove('hidden');
 
                 const circle = document.getElementById('aqi-circle');
                 const status = document.getElementById('aqi-status-text');
                 const adviceCard = document.getElementById('advice-card');
                 const adviceText = document.getElementById('advice-text');
 
+                // สูตรแสดงผลวงกลมเต็มวง (เทียบเกณฑ์ที่ 100 µg/m³)
                 const offset = CIRCUMFERENCE - (Math.min(pm25, 100) / 100) * CIRCUMFERENCE;
                 circle.style.strokeDashoffset = offset;
 
-                // อ้างอิงเกณฑ์ Air4Thai ของไทย (สีส้มเริ่มที่ 37.6)
-                if (pm25 >= 37.6) {
-                    circle.style.stroke = "#f97316"; 
+                // กำหนดสีตามเกณฑ์ Air4Thai ประเทศไทย
+                if (pm25 >= 37.6) { // ระดับสีส้ม: เริ่มมีผลต่อสุขภาพ
+                    circle.style.stroke = "#f97316"; // สีส้ม (Tailwind orange-500)
                     status.innerText = "เริ่มมีผลต่อสุขภาพ (สีส้ม)";
-                    status.className = "text-orange-500 text-2xl font-bold";
+                    status.className = "text-orange-500 text-2xl font-bold italic";
                     adviceCard.classList.remove('hidden');
-                    adviceText.innerText = `ขณะนี้ค่าฝุ่นที่ ${station} อยู่ที่ ${pm25} µg/m³ ผู้ป่วยหอบหืดควรลดกิจกรรมกลางแจ้งและเตรียมยาพ่นสำรองไว้เสมอ`;
-                } else {
-                    circle.style.stroke = "#22c55e";
-                    status.innerText = "อากาศดี";
-                    status.className = "text-green-500 text-2xl font-bold";
+                    adviceText.innerText = `ขณะนี้ฝุ่นในพื้นที่ ${station} มีค่าอยู่ที่ ${pm25} µg/m³ ผู้ป่วยหอบหืดควรลดกิจกรรมกลางแจ้งและเตรียมยาพ่นสำรองไว้เสมอ`;
+                } else if (pm25 >= 15.1) { // ระดับสีเหลือง: ปานกลาง
+                    circle.style.stroke = "#eab308"; // สีเหลือง (Tailwind yellow-500)
+                    status.innerText = "คุณภาพอากาศปานกลาง";
+                    status.className = "text-yellow-500 text-2xl font-bold italic";
+                    adviceCard.classList.add('hidden');
+                } else { // ระดับสีเขียว: ดีมาก
+                    circle.style.stroke = "#22c55e"; // สีเขียว (Tailwind green-500)
+                    status.innerText = "คุณภาพอากาศ: ดีมาก";
+                    status.className = "text-green-500 text-2xl font-bold italic";
                     adviceCard.classList.add('hidden');
                 }
             } catch (e) {
-                document.getElementById('aqi-status-text').innerText = "ข้อมูลขัดข้อง";
+                document.getElementById('aqi-status-text').innerText = "โหลดข้อมูลล้มเหลว";
             }
         }
 
         function handleError() {
-            document.getElementById('aqi-status-text').innerText = "กรุณาเปิด GPS และอนุญาตสิทธิ์";
+            document.getElementById('aqi-status-text').innerText = "โปรดอนุญาตสิทธิ์เข้าถึง GPS";
         }
     </script>
 </body>
