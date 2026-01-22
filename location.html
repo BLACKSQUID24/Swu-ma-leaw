@@ -3,126 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asthma Buddy - ค้นหาร้านยาแม่นยำสูง</title>
+    <title>ค้นหาร้านยา - Asthma Care</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap'); body { font-family: 'Kanit', sans-serif; }</style>
 </head>
-<body class="bg-gray-50 pb-24">
-    <header class="bg-orange-500 text-white p-4 text-center sticky top-0 z-50 shadow-md">
-        <h1 class="text-xl font-medium">ค้นหาร้านยา</h1>
+<body class="bg-gray-50 pb-28">
+    <header class="bg-[#3b82f6] text-white p-4 text-center sticky top-0 z-40 shadow-md">
+        <h1 class="text-lg font-medium">ร้านยาใกล้ฉัน</h1>
     </header>
 
     <main class="p-4 max-w-md mx-auto">
-        <div class="mb-4 bg-white p-4 rounded-[2rem] shadow-sm border border-gray-100">
-            <div class="relative mb-3">
-                <input type="text" id="manual-search" placeholder="พิมพ์ชื่อร้าน หรือ ชื่อเขต..." 
-                    class="w-full p-4 pl-12 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-orange-400 text-sm">
-                <i class="fa-solid fa-magnifying-glass absolute left-4 top-4 text-gray-400"></i>
-            </div>
-            <button onclick="handleManualSearch()" class="w-full bg-orange-500 text-white py-4 rounded-2xl font-bold shadow-lg shadow-orange-100 active:scale-95 transition">
-                ค้นหาตอนนี้
+        <div class="mb-4 bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex gap-2">
+            <input type="text" id="manual-search" placeholder="พิมพ์ชื่อร้าน หรือ เขต..." 
+                class="flex-1 p-3 bg-gray-50 rounded-xl border-none outline-none text-sm focus:ring-1 focus:ring-blue-300">
+            <button onclick="handleManualSearch()" class="bg-[#3b82f6] text-white w-12 h-12 rounded-xl flex items-center justify-center shadow-md active:scale-95 transition">
+                <i class="fa-solid fa-magnifying-glass"></i>
             </button>
         </div>
 
-        <div id="status-card" class="bg-white p-6 rounded-3xl shadow-sm mb-6 text-center border border-gray-50">
-            <div id="status-icon" class="bg-orange-100 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3 animate-pulse">
-                <i class="fa-solid fa-location-crosshairs text-2xl text-orange-500"></i>
+        <div id="status-card" class="bg-white p-4 rounded-2xl shadow-sm mb-4 text-center border border-gray-100">
+            <div id="status-icon" class="bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2 animate-pulse">
+                <i class="fa-solid fa-location-crosshairs text-[#3b82f6]"></i>
             </div>
-            <h2 id="status-title" class="font-bold text-gray-800 text-lg">กำลังระบุตำแหน่ง...</h2>            
+            <h2 id="status-title" class="font-bold text-gray-600 text-sm">กำลังระบุตำแหน่งปัจจุบัน...</h2>            
         </div>
 
-        <div id="pharmacy-list" class="space-y-4">
-            </div>
+        <div id="pharmacy-list" class="space-y-3"></div>
     </main>
 
-    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex justify-around p-3 shadow-xl z-50">
-        <a href="index.html" class="flex flex-col items-center text-gray-400"><i class="fa-solid fa-chart-pie text-xl"></i><span class="text-[10px] mt-1 font-bold">DASHBOARD</span></a>
-        <a href="location.html" class="flex flex-col items-center text-orange-500"><i class="fa-solid fa-map-location-dot text-xl"></i><span class="text-[10px] mt-1 font-bold">LOCATION</span></a>
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around p-3 pb-6 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-50">
+        <a href="index.html" class="flex flex-col items-center text-gray-400 hover:text-blue-500 transition">
+            <i class="fa-solid fa-house text-xl mb-1"></i>
+            <span class="text-[10px] font-bold">หน้าหลัก</span>
+        </a>
+        <a href="assessment.html" class="flex flex-col items-center text-gray-400 hover:text-blue-500 transition">
+            <i class="fa-solid fa-table-list text-xl mb-1"></i>
+            <span class="text-[10px] font-bold">ประเมิน</span>
+        </a>
+        <a href="location.html" class="flex flex-col items-center text-[#3b82f6]">
+            <i class="fa-solid fa-location-dot text-xl mb-1"></i>
+            <span class="text-[10px] font-bold">ร้านยา</span>
+        </a>
     </nav>
 
     <script>
-        // 1. สูตรคำนวณระยะทางตามผิวโค้งของโลก (Haversine)
+        // ฟังก์ชันคำนวณระยะทาง
         const calculateDistance = (lat1, lon1, lat2, lon2) => {
-            const R = 6371; // รัศมีโลก (กม.)
+            const R = 6371; 
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
             const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         };
 
-        // 2. เริ่มต้นหาตำแหน่งอัตโนมัติเมื่อเปิดหน้า
         window.onload = () => {
-            navigator.geolocation.getCurrentPosition(pos => fetchPharmacies(pos.coords.latitude, pos.coords.longitude), 
-            err => updateStatus("ไม่สามารถเข้าถึงตำแหน่งได้", "error"), {enableHighAccuracy: true});
+            requestLocation();
         };
 
-        // 3. ฟังก์ชันดึงข้อมูลและประมวลผลความแม่นยำสูง
+        function requestLocation() {
+            if(navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    pos => fetchPharmacies(pos.coords.latitude, pos.coords.longitude), 
+                    err => updateStatus("กรุณาเปิด GPS และอนุญาตการเข้าถึงตำแหน่ง", "error"), 
+                    {enableHighAccuracy: true}
+                );
+            } else { 
+                updateStatus("อุปกรณ์ไม่รองรับ GPS", "error"); 
+            }
+        }
+
         async function fetchPharmacies(uLat, uLon, keyword = "") {
-            updateStatus("กำลังดึงข้อมูลร้านยา...", "loading");
-            
-            // Query แยกกรณีตาม keyword หรือตามพิกัด
-            const areaQuery = keyword ? `["name"~"${keyword}"](13.5,100.3,14.0,100.9)` : `(around:5000,${uLat},${uLon})`;
-            const query = `[out:json];(node["amenity"="pharmacy"]${areaQuery};node["shop"="drugstore"]${areaQuery};way["amenity"="pharmacy"]${areaQuery};);out center;`;
+            updateStatus("กำลังค้นหาร้านยาใกล้คุณ...", "loading");
+            // ปรับรัศมีเป็น 20 กม. (20000 เมตร) เพื่อให้ครอบคลุม แต่เน้นเรียงจากใกล้ไปไกล
+            const radius = 20000; 
+            const areaQuery = keyword ? `["name"~"${keyword}"](around:${radius},${uLat},${uLon})` : `(around:${radius},${uLat},${uLon})`;
+            const query = `[out:json];(node["amenity"="pharmacy"]${areaQuery};node["shop"="drugstore"]${areaQuery};way["amenity"="pharmacy"]${areaQuery};way["shop"="drugstore"]${areaQuery};);out center;`;
             
             try {
                 const res = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
                 const data = await res.json();
                 
-                // คำนวณระยะทางและเรียงลำดับจากใกล้ไปไกล
                 const items = data.elements.map(s => {
                     const sLat = s.lat || s.center.lat;
                     const sLon = s.lon || s.center.lon;
                     return {
                         name: s.tags.name || "ร้านขายยา",
+                        address: s.tags["addr:full"] || s.tags["addr:street"] || "ประเทศไทย",
                         dist: calculateDistance(uLat, uLon, sLat, sLon),
-                        lat: sLat, lon: sLon,
-                        type: s.tags.shop ? 'คลังยา/ขายส่ง' : 'ร้านยา/เภสัช'
+                        lat: sLat, 
+                        lon: sLon
                     };
                 }).sort((a, b) => a.dist - b.dist);
 
                 renderList(items);
-                updateStatus(`พบ ${items.length} แห่งในพื้นที่`, "success");
-            } catch (e) { updateStatus("เกิดข้อผิดพลาดในการโหลด", "error"); }
+                updateStatus(`พบ ${items.length} ร้านในบริเวณใกล้เคียง`, "success");
+            } catch (e) { 
+                updateStatus("เกิดข้อผิดพลาดในการโหลดข้อมูล", "error"); 
+            }
         }
 
-        // 4. ค้นหาด้วยชื่อร้าน/เขต
         function handleManualSearch() {
             const k = document.getElementById('manual-search').value;
-            if (k) navigator.geolocation.getCurrentPosition(p => fetchPharmacies(p.coords.latitude, p.coords.longitude, k));
+            updateStatus("กำลังค้นหา...", "loading");
+            navigator.geolocation.getCurrentPosition(p => fetchPharmacies(p.coords.latitude, p.coords.longitude, k));
         }
 
-        // 5. แสดงผลรายการร้านยา
         function renderList(items) {
             const list = document.getElementById('pharmacy-list');
             if (items.length === 0) {
-                list.innerHTML = `<p class="text-center text-gray-400 my-10 font-light">ไม่พบร้านยาในพื้นที่ที่ระบุ</p>`;
+                list.innerHTML = `
+                    <div class="text-center py-10">
+                        <i class="fa-solid fa-store-slash text-gray-300 text-4xl mb-3"></i>
+                        <p class="text-gray-400 font-light text-sm">ไม่พบร้านยาในพิกัดของคุณ</p>
+                    </div>`;
                 return;
             }
             list.innerHTML = items.map(i => `
-                <div class="bg-white p-5 rounded-[1.5rem] shadow-sm border-l-[6px] ${i.type.includes('คลัง') ? 'border-blue-500' : 'border-green-500'} flex justify-between items-center">
-                    <div class="flex-1 pr-4">
-                        <h4 class="font-bold text-gray-800 text-sm">${i.name}</h4>
-                        <p class="text-[11px] text-orange-500 font-bold mt-1 uppercase">ห่างจากคุณ ${i.dist.toFixed(2)} กม.</p>
-                        <p class="text-[10px] text-gray-400 mt-0.5">${i.type}</p>
+                <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-[#3b82f6] flex justify-between items-center transition active:bg-gray-50">
+                    <div class="flex-1 pr-2">
+                        <h4 class="font-bold text-gray-800 text-sm truncate">${i.name}</h4>
+                        <div class="flex items-center gap-2 mt-1">
+                            <span class="text-[10px] bg-blue-50 text-[#3b82f6] px-2 py-0.5 rounded-full font-bold">
+                                ห่าง ${i.dist.toFixed(2)} กม.
+                            </span>
+                            <span class="text-[10px] text-gray-400 truncate max-w-[120px]">${i.address}</span>
+                        </div>
                     </div>
-                    <button onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=${i.lat},${i.lon}')" 
-                        class="bg-orange-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-md active:scale-95 transition">นำทาง</button>
+                    <a href="https://www.google.com/maps/dir/?api=1&destination=${i.lat},${i.lon}" target="_blank"
+                        class="bg-[#3b82f6] text-white w-10 h-10 rounded-lg flex items-center justify-center text-sm shadow-md hover:scale-110 transition">
+                        <i class="fa-solid fa-location-arrow"></i>
+                    </a>
                 </div>
             `).join('');
         }
 
         function updateStatus(title, type) {
-            const card = document.getElementById('status-card');
+            const titleEl = document.getElementById('status-title');
             const icon = document.getElementById('status-icon');
-            document.getElementById('status-title').innerText = title;
+            titleEl.innerText = title;
+            icon.classList.remove('animate-pulse');
             
             if (type === "success") {
-                icon.className = "bg-green-100 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3";
-                icon.innerHTML = '<i class="fa-solid fa-check text-green-500 text-2xl"></i>';
+                icon.className = "bg-green-100 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2";
+                icon.innerHTML = '<i class="fa-solid fa-check text-green-500"></i>';
             } else if (type === "error") {
-                icon.className = "bg-red-100 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3";
-                icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-red-500 text-2xl"></i>';
+                icon.className = "bg-red-100 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2";
+                icon.innerHTML = '<i class="fa-solid fa-exclamation text-red-500"></i>';
+            } else if (type === "loading") {
+                icon.className = "bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2 animate-pulse";
+                icon.innerHTML = '<i class="fa-solid fa-location-crosshairs text-blue-500"></i>';
             }
         }
     </script>

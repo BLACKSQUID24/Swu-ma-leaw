@@ -3,160 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asthma Buddy - Nearest Station</title>
+    <title>Asthma Care - Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap');
         body { font-family: 'Kanit', sans-serif; }
-        .progress-ring__circle {
-            transition: stroke-dashoffset 0.8s ease, stroke 0.5s ease;
-            transform: rotate(-90deg);
-            transform-origin: 50% 50%;
-        }
+        .progress-ring__circle { transition: stroke-dashoffset 0.8s ease, stroke 0.5s ease; transform: rotate(-90deg); transform-origin: 50% 50%; }
+        .risk-bar-bg { height: 12px; border-radius: 6px; background: linear-gradient(to right, #3b82f6 0%, #22c55e 25%, #eab308 50%, #f97316 75%, #ef4444 100%); }
+        .risk-pointer { transition: left 0.5s ease; }
     </style>
 </head>
-<body class="bg-blue-50 pb-24 text-gray-800">
-
-    <header class="bg-orange-500 text-white p-5 text-center sticky top-0 z-50 shadow-md">
-        <h1 class="text-xl font-medium tracking-wide">สถานีตรวจวัดใกล้คุณ</h1>
+<body class="bg-slate-50 pb-28 text-gray-800">
+    <header class="bg-blue-600 text-white p-5 text-center sticky top-0 z-50 shadow-md">
+        <h1 class="text-xl font-medium">Asthma Care Monitor</h1>
     </header>
 
-    <main class="p-6 max-w-md mx-auto">
-        <div class="bg-white rounded-[3rem] p-8 shadow-lg text-center mb-6 border border-white relative overflow-hidden">
-            <i class="fa-solid fa-map-location-dot absolute -right-4 -top-4 text-9xl text-gray-50 opacity-50"></i>
-            
-            <div class="relative inline-flex items-center justify-center z-10">
-                <svg class="w-64 h-64">
-                    <circle class="text-gray-100" stroke-width="18" stroke="currentColor" fill="transparent" r="100" cx="128" cy="128" />
-                    <circle id="aqi-circle" class="progress-ring__circle text-gray-200" 
-                        stroke-width="18" stroke-dasharray="628.3" stroke-dashoffset="628.3" 
-                        stroke-linecap="round" stroke="currentColor" fill="transparent" r="100" cx="128" cy="128" />
+    <main class="p-5 max-w-md mx-auto">
+        <div class="bg-white rounded-[2rem] p-6 shadow-lg text-center mb-6 border border-gray-100">
+            <div class="relative inline-flex items-center justify-center mb-4">
+                <svg class="w-48 h-48">
+                    <circle class="text-gray-100" stroke-width="10" stroke="currentColor" fill="transparent" r="85" cx="96" cy="96" />
+                    <circle id="aqi-circle" class="progress-ring__circle" stroke-width="10" stroke-dasharray="534" stroke-dashoffset="534" stroke-linecap="round" stroke="currentColor" fill="transparent" r="85" cx="96" cy="96" />
                 </svg>
                 <div class="absolute inset-0 flex flex-col items-center justify-center">
-                    <span id="pm25-value" class="text-7xl font-bold text-gray-800 tracking-tighter">--</span>
-                    <span class="text-xs text-gray-400 font-bold uppercase mt-2 italic">µg/m³ (PM 2.5)</span>
+                    <span id="pm25-value" class="text-6xl font-bold">--</span>
+                    <span class="text-[10px] text-gray-400 font-bold uppercase mt-1">PM 2.5 (µg/m³)</span>
                 </div>
             </div>
+            <h2 id="aqi-status-text" class="text-2xl font-bold text-gray-400 mb-4">รอข้อมูล...</h2>
 
-            <div class="mt-6 space-y-2 z-10 relative">
-                <p id="aqi-status-text" class="text-xl font-bold text-gray-400 italic">กำลังค้นหาสถานี...</p>
-                
-                <div id="station-info" class="hidden flex flex-col items-center gap-1">
-                    <div class="bg-blue-50 px-4 py-1.5 rounded-full border border-blue-100 flex items-center gap-2">
-                        <i class="fa-solid fa-tower-broadcast text-blue-500 text-xs"></i>
-                        <p id="station-name" class="text-xs text-blue-700 font-bold truncate max-w-[200px]"></p>
-                    </div>
-                    <p id="distance-text" class="text-[10px] text-gray-400 font-light"></p>
+            <div class="relative pt-4">
+                <div class="flex justify-between text-[10px] mb-1 font-bold">
+                    <span>ดีมาก</span><span>ดี</span><span>ปานกลาง</span><span>เริ่มมีผล</span><span>อันตราย</span>
+                </div>
+                <div class="risk-bar-bg w-full relative">
+                    <div id="risk-pointer" class="risk-pointer absolute top-[-5px] w-4 h-4 bg-white border-2 border-gray-800 rounded-full shadow-md" style="left: 0%"></div>
                 </div>
             </div>
         </div>
 
-        <div id="advice-card" class="hidden bg-white rounded-3xl p-6 shadow-sm border-l-[10px] border-orange-500">
-            <h3 class="font-bold text-orange-600 text-lg mb-2"><i class="fa-solid fa-lungs mr-2"></i>ข้อควรระวัง</h3>
-            <p id="advice-text" class="text-sm text-gray-600 leading-relaxed font-medium"></p>
+        <div id="asthma-advice-card" class="hidden bg-white rounded-2xl p-5 shadow-sm border-l-[6px] mb-6">
+            <div class="flex items-start gap-3">
+                <div id="status-icon" class="text-3xl"></div>
+                <div>
+                    <h3 id="advice-title" class="font-bold text-md mb-1"></h3>
+                    <p id="asthma-action" class="text-xs text-gray-600 mb-2"></p>
+                    <p id="checklist-text" class="text-[11px] font-bold text-blue-800 bg-blue-50 p-2 rounded"></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <a href="assessment.html" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center">
+                <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-2 text-xl"><i class="fa-solid fa-clipboard-list"></i></div>
+                <span class="font-bold text-sm">ทำแบบประเมิน</span>
+            </a>
+            <a href="location.html" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center">
+                <div class="w-12 h-12 rounded-full bg-orange-100 text-orange-500 flex items-center justify-center mb-2 text-xl"><i class="fa-solid fa-pills"></i></div>
+                <span class="font-bold text-sm">ค้นหาร้านยา</span>
+            </a>
         </div>
     </main>
 
-    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex justify-around p-4 shadow-2xl z-50">
-        <a href="index.html" class="flex flex-col items-center text-orange-500"><i class="fa-solid fa-chart-pie text-xl"></i><span class="text-[10px] mt-1 font-bold">DASHBOARD</span></a>
-        <a href="location.html" class="flex flex-col items-center text-gray-400"><i class="fa-solid fa-map-location-dot text-xl"></i><span class="text-[10px] mt-1 font-bold">LOCATION</span></a>
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around p-3 pb-6 z-50">
+        <a href="index.html" class="flex flex-col items-center text-blue-600"><i class="fa-solid fa-house text-xl mb-1"></i><span class="text-[10px] font-bold">หน้าหลัก</span></a>
+        <a href="assessment.html" class="flex flex-col items-center text-gray-400"><i class="fa-solid fa-clipboard-user text-xl mb-1"></i><span class="text-[10px] font-bold">ประเมิน</span></a>
+        <a href="location.html" class="flex flex-col items-center text-gray-400"><i class="fa-solid fa-location-dot text-xl mb-1"></i><span class="text-[10px] font-bold">ร้านยา</span></a>
     </nav>
 
     <script>
-        const CIRCUMFERENCE = 628.3; 
-        const API_TOKEN = "demo"; // แนะนำให้ใช้ Token ส่วนตัวถ้าต้องการความเสถียรสูงสุด
-
-        window.onload = () => {
+        const CIRCUMFERENCE = 534;
+        function initLocation() {
             if (navigator.geolocation) {
-                // เปิด High Accuracy เพื่อให้คำนวณระยะห่างได้แม่นยำ
-                navigator.geolocation.getCurrentPosition(processLocation, handleError, {
-                    enableHighAccuracy: true, timeout: 10000
-                });
-            } else { handleError(); }
-        };
-
-        async function processLocation(pos) {
-            const userLat = pos.coords.latitude;
-            const userLon = pos.coords.longitude;
-            
+                navigator.geolocation.getCurrentPosition(fetchData, () => { document.getElementById('aqi-status-text').innerText = "โปรดเปิด GPS"; });
+            }
+        }
+        async function fetchData(pos) {
             try {
-                // เรียก API โดยใช้พิกัดจริง
-                const res = await fetch(`https://api.waqi.info/feed/geo:${userLat};${userLon}/?token=${API_TOKEN}`);
-                const { data } = await res.json();
-                
-                // ตรวจสอบพิกัดของสถานีที่ได้มา
-                const stationLat = data.city.geo[0];
-                const stationLon = data.city.geo[1];
-                
-                // คำนวณระยะห่างระหว่าง "คุณ" กับ "สถานี" (กิโลเมตร)
-                const distanceKm = calcDistance(userLat, userLon, stationLat, stationLon);
-                
-                // *** กรองสถานี: ถ้าห่างเกิน 200 กม. ถือว่าไม่ใช่สถานีใกล้เคียง (อาจเป็น Shanghai) ***
-                if (distanceKm > 200) {
-                    console.warn(`Station too far (${distanceKm.toFixed(0)} km). Retrying...`);
-                    // กรณีนี้อาจจะบังคับให้ดึงค่าเฉลี่ย กทม. แทน หรือลองใหม่
-                    document.getElementById('aqi-status-text').innerText = "กำลังกรองข้อมูล...";
-                    return setTimeout(() => processLocation(pos), 2000);
-                }
-
-                renderUI(data, distanceKm);
-
-            } catch (e) {
-                document.getElementById('aqi-status-text').innerText = "เชื่อมต่อล้มเหลว";
-            }
+                const res = await fetch(`https://api.waqi.info/feed/geo:${pos.coords.latitude};${pos.coords.longitude}/?token=demo`);
+                const data = await res.json();
+                if (data.status === "ok") updateUI(data.data.aqi);
+            } catch (e) { console.error(e); }
         }
+        function updateUI(aqi) {
+            document.getElementById('pm25-value').innerText = aqi;
+            let config = {};
+            if (aqi <= 25) config = { color: "#3b82f6", status: "ดีมาก", title: "ปลอดภัย", action: "ใช้ชีวิตได้ปกติ", check: "เหมาะกับกิจกรรมกลางแจ้ง", icon: "😊", pos: "5%" };
+            else if (aqi <= 50) config = { color: "#22c55e", status: "ดี", title: "ปกติ", action: "ควรสังเกตอาการหากไวต่อฝุ่น", check: "ใช้ชีวิตได้ตามปกติ", icon: "✅", pos: "25%" };
+            else if (aqi <= 100) config = { color: "#eab308", status: "ปานกลาง", title: "เริ่มระวัง", action: "ลดกิจกรรมกลางแจ้งหากมีอาการ", check: "ควรพกยาพ่นติดตัว", icon: "⚠️", pos: "50%" };
+            else if (aqi <= 200) config = { color: "#f97316", status: "เริ่มมีผล", title: "ไม่ปลอดภัย", action: "สวมหน้ากากอนามัยเสมอ", check: "ต้องพกยาพ่น และเลี่ยงที่แจ้ง", icon: "😷", pos: "75%" };
+            else config = { color: "#ef4444", status: "อันตราย", title: "วิกฤต", action: "งดกิจกรรมกลางแจ้งเด็ดขาด", check: "เตรียมยาพ่นและเบอร์ฉุกเฉิน", icon: "🚨", pos: "95%" };
 
-        function renderUI(data, dist) {
-            const pm25 = data.iaqi.pm25 ? data.iaqi.pm25.v : data.aqi;
-            const station = data.city.name;
+            document.getElementById('aqi-status-text').innerText = config.status;
+            document.getElementById('aqi-status-text').style.color = config.color;
+            document.getElementById('aqi-circle').style.stroke = config.color;
+            document.getElementById('aqi-circle').style.strokeDashoffset = CIRCUMFERENCE - (Math.min(aqi, 200) / 200) * CIRCUMFERENCE;
+            document.getElementById('risk-pointer').style.left = config.pos;
             
-            // แสดงข้อมูล
-            document.getElementById('pm25-value').innerText = pm25;
-            document.getElementById('station-name').innerText = station;
-            document.getElementById('distance-text').innerText = `ห่างจากคุณประมาณ ${dist.toFixed(1)} กม.`;
-            document.getElementById('station-info').classList.remove('hidden');
-
-            const circle = document.getElementById('aqi-circle');
-            const status = document.getElementById('aqi-status-text');
-            const adviceCard = document.getElementById('advice-card');
-            const adviceText = document.getElementById('advice-text');
-
-            const offset = CIRCUMFERENCE - (Math.min(pm25, 100) / 100) * CIRCUMFERENCE;
-            circle.style.strokeDashoffset = offset;
-
-            // เกณฑ์สี Air4Thai
-            if (pm25 >= 37.6) {
-                setColor("#f97316", "เริ่มมีผลต่อสุขภาพ (สีส้ม)");
-                adviceCard.classList.remove('hidden');
-                adviceText.innerText = `ค่าฝุ่น ${pm25} µg/m³ เกินเกณฑ์มาตรฐาน ควรลดกิจกรรมกลางแจ้งและเตรียมยาพ่น`;
-            } else if (pm25 >= 15.1) {
-                setColor("#eab308", "คุณภาพปานกลาง (สีเหลือง)");
-                adviceCard.classList.add('hidden');
-            } else {
-                setColor("#22c55e", "คุณภาพอากาศดี (สีเขียว)");
-                adviceCard.classList.add('hidden');
-            }
-
-            function setColor(color, text) {
-                circle.style.stroke = color;
-                status.innerText = text;
-                status.style.color = color;
-            }
+            const card = document.getElementById('asthma-advice-card');
+            card.classList.remove('hidden');
+            card.style.borderColor = config.color;
+            document.getElementById('status-icon').innerText = config.icon;
+            document.getElementById('advice-title').innerText = config.title;
+            document.getElementById('advice-title').style.color = config.color;
+            document.getElementById('asthma-action').innerText = config.action;
+            document.getElementById('checklist-text').innerText = "สิ่งที่ต้องทำ: " + config.check;
         }
-
-        // สูตรคำนวณระยะทาง Haversine (กม.)
-        function calcDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371; 
-            const dLat = deg2rad(lat2 - lat1);
-            const dLon = deg2rad(lon2 - lon1);
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                      Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2);
-            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        }
-        function deg2rad(deg) { return deg * (Math.PI/180); }
-
-        function handleError() { document.getElementById('aqi-status-text').innerText = "โปรดเปิด GPS"; }
+        window.onload = initLocation;
     </script>
 </body>
 </html>
