@@ -13,6 +13,8 @@
         .risk-bar-bg { height: 12px; border-radius: 6px; background: linear-gradient(to right, #3b82f6 0%, #22c55e 25%, #eab308 50%, #f97316 75%, #ef4444 100%); }
         .risk-pointer { transition: left 0.5s ease; }
     </style>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#000000">
 </head>
 <body class="bg-slate-50 pb-28 text-gray-800">
     <header class="bg-blue-600 text-white p-5 text-center sticky top-0 z-50 shadow-md">
@@ -110,7 +112,16 @@
             document.getElementById('asthma-action').innerText = config.action;
             document.getElementById('checklist-text').innerText = "สิ่งที่ต้องทำ: " + config.check;
         }
-        window.onload = initLocation;
+        window.onload = () => {
+            initLocation(); // เรียกฟังก์ชันดึงค่าฝุ่นเดิม
+
+            // ตรวจสอบว่า Browser รองรับ Service Worker หรือไม่
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('PWA: Service Worker จดทะเบียนเรียบร้อย!', reg))
+                .catch(err => console.error('PWA: ลงทะเบียนล้มเหลว', err));
+            }
+        };
     </script>
 </body>
 </html>
