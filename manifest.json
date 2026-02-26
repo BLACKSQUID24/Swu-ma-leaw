@@ -3,13 +3,13 @@
   "name": "Helper Asthma Care",
   "icons": [
     {
-      "src": "icon.png",
+      "src": "image/icon.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any maskable"
     },
     {
-      "src": "icon.png",
+      "src": "image/icon.png",
       "type": "image/png",
       "sizes": "512x512"
     }
