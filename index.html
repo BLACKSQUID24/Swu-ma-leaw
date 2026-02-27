@@ -58,7 +58,7 @@
 
         <div class="grid grid-cols-2 gap-4">
             <a href="assessment.html" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center">
-                <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-2 text-xl"><i class="fa-solid fa-clipboard-list"></i></div>
+                <div class="w-12 h-12 rounded-full bg-blue-100 text-slate-500 flex items-center justify-center mb-2 text-xl"><i class="fa-solid fa-list-ul"></i></div>
                 <span class="font-bold text-sm">ทำแบบประเมิน</span>
             </a>
             <a href="location.html" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center">
@@ -70,7 +70,7 @@
 
     <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around p-3 pb-6 z-50">
         <a href="index.html" class="flex flex-col items-center text-blue-600"><i class="fa-solid fa-house text-xl mb-1"></i><span class="text-[10px] font-bold">หน้าหลัก</span></a>
-        <a href="assessment.html" class="flex flex-col items-center text-gray-400"><i class="fa-solid fa-clipboard-user text-xl mb-1"></i><span class="text-[10px] font-bold">ประเมิน</span></a>
+        <a href="assessment.html" class="flex flex-col items-center text-gray-400"><i class="fa-solid fa-list-ul text-xl mb-1"></i><span class="text-[10px] font-bold">ประเมิน</span></a>
         <a href="location.html" class="flex flex-col items-center text-gray-400"><i class="fa-solid fa-location-dot text-xl mb-1"></i><span class="text-[10px] font-bold">ร้านยา</span></a>
     </nav>
 
@@ -113,9 +113,8 @@
             document.getElementById('checklist-text').innerText = "สิ่งที่ต้องทำ: " + config.check;
         }
         window.onload = () => {
-            initLocation(); // เรียกฟังก์ชันดึงค่าฝุ่นเดิม
+            initLocation();
 
-            // ตรวจสอบว่า Browser รองรับ Service Worker หรือไม่
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('sw.js')
                 .then(reg => console.log('PWA: Service Worker จดทะเบียนเรียบร้อย!', reg))
