@@ -56,14 +56,26 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
-            <a href="assessment.html" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center">
-                <div class="w-12 h-12 rounded-full bg-blue-100 text-slate-500 flex items-center justify-center mb-2 text-xl"><i class="fa-solid fa-list-ul"></i></div>
-                <span class="font-bold text-sm">ทำแบบประเมิน</span>
+        <div class="grid grid-cols-3 gap-2">
+            <a href="assessment.html" class="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center transition-all active:scale-95 active:bg-gray-50">
+                <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-2 text-lg">
+                    <i class="fa-solid fa-list-ul"></i>
+                </div>
+                <span class="font-bold text-[10px] text-center">ทำแบบประเมิน</span>
             </a>
-            <a href="location.html" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center">
-                <div class="w-12 h-12 rounded-full bg-orange-100 text-orange-500 flex items-center justify-center mb-2 text-xl"><i class="fa-solid fa-pills"></i></div>
-                <span class="font-bold text-sm">ค้นหาร้านยา</span>
+
+            <button onclick="confirmEmergencyCall()" class="bg-red-50 p-3 rounded-2xl shadow-sm border border-red-100 flex flex-col items-center justify-center transition-all active:scale-95 active:bg-red-100">
+                <div class="w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center mb-2 text-lg shadow-md">
+                    <i class="fa-solid fa-phone-flip animate-pulse"></i>
+                </div>
+                <span class="font-bold text-[10px] text-red-600 text-center uppercase">1669</span>
+            </button>
+
+            <a href="location.html" class="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center transition-all active:scale-95 active:bg-gray-50">
+                <div class="w-10 h-10 rounded-full bg-orange-100 text-orange-500 flex items-center justify-center mb-2 text-lg">
+                    <i class="fa-solid fa-pills"></i>
+                </div>
+                <span class="font-bold text-[10px] text-center">ค้นหาร้านยา</span>
             </a>
         </div>
     </main>
@@ -76,11 +88,22 @@
 
     <script>
         const CIRCUMFERENCE = 534;
-        function initLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(fetchData, () => { document.getElementById('aqi-status-text').innerText = "โปรดเปิด GPS"; });
+
+        // ฟังก์ชันยืนยันการโทรฉุกเฉิน
+        function confirmEmergencyCall() {
+            if (confirm("⚠️ คุณต้องการโทรสายด่วนฉุกเฉิน 1669 ใช่หรือไม่?")) {
+                window.location.href = "tel:1669";
             }
         }
+
+        function initLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(fetchData, () => { 
+                    document.getElementById('aqi-status-text').innerText = "โปรดเปิด GPS"; 
+                });
+            }
+        }
+
         async function fetchData(pos) {
             try {
                 const res = await fetch(`https://api.waqi.info/feed/geo:${pos.coords.latitude};${pos.coords.longitude}/?token=demo`);
@@ -88,6 +111,7 @@
                 if (data.status === "ok") updateUI(data.data.aqi);
             } catch (e) { console.error(e); }
         }
+
         function updateUI(aqi) {
             document.getElementById('pm25-value').innerText = aqi;
             let config = {};
@@ -112,9 +136,9 @@
             document.getElementById('asthma-action').innerText = config.action;
             document.getElementById('checklist-text').innerText = "สิ่งที่ต้องทำ: " + config.check;
         }
+
         window.onload = () => {
             initLocation();
-
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('sw.js')
                 .then(reg => console.log('PWA: Service Worker จดทะเบียนเรียบร้อย!', reg))
