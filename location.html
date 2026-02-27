@@ -38,7 +38,7 @@
             <span class="text-[10px] font-bold">หน้าหลัก</span>
         </a>
         <a href="assessment.html" class="flex flex-col items-center text-gray-400 hover:text-blue-500 transition">
-            <i class="fa-solid fa-table-list text-xl mb-1"></i>
+            <i class="fa-solid fa-list-ul text-xl mb-1"></i>
             <span class="text-[10px] font-bold">ประเมิน</span>
         </a>
         <a href="location.html" class="flex flex-col items-center text-[#3b82f6]">
@@ -48,7 +48,6 @@
     </nav>
 
     <script>
-        // ฟังก์ชันคำนวณระยะทาง
         const calculateDistance = (lat1, lon1, lat2, lon2) => {
             const R = 6371; 
             const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -75,7 +74,6 @@
 
         async function fetchPharmacies(uLat, uLon, keyword = "") {
             updateStatus("กำลังค้นหาร้านยาใกล้คุณ...", "loading");
-            // ปรับรัศมีเป็น 20 กม. (20000 เมตร) เพื่อให้ครอบคลุม แต่เน้นเรียงจากใกล้ไปไกล
             const radius = 20000; 
             const areaQuery = keyword ? `["name"~"${keyword}"](around:${radius},${uLat},${uLon})` : `(around:${radius},${uLat},${uLon})`;
             const query = `[out:json];(node["amenity"="pharmacy"]${areaQuery};node["shop"="drugstore"]${areaQuery};way["amenity"="pharmacy"]${areaQuery};way["shop"="drugstore"]${areaQuery};);out center;`;
@@ -112,11 +110,7 @@
         function renderList(items) {
             const list = document.getElementById('pharmacy-list');
             if (items.length === 0) {
-                list.innerHTML = `
-                    <div class="text-center py-10">
-                        <i class="fa-solid fa-store-slash text-gray-300 text-4xl mb-3"></i>
-                        <p class="text-gray-400 font-light text-sm">ไม่พบร้านยาในพิกัดของคุณ</p>
-                    </div>`;
+                list.innerHTML = `<div class="text-center py-10"><i class="fa-solid fa-store-slash text-gray-300 text-4xl mb-3"></i><p class="text-gray-400 font-light text-sm">ไม่พบร้านยาในพิกัดของคุณ</p></div>`;
                 return;
             }
             list.innerHTML = items.map(i => `
@@ -124,13 +118,11 @@
                     <div class="flex-1 pr-2">
                         <h4 class="font-bold text-gray-800 text-sm truncate">${i.name}</h4>
                         <div class="flex items-center gap-2 mt-1">
-                            <span class="text-[10px] bg-blue-50 text-[#3b82f6] px-2 py-0.5 rounded-full font-bold">
-                                ห่าง ${i.dist.toFixed(2)} กม.
-                            </span>
+                            <span class="text-[10px] bg-blue-50 text-[#3b82f6] px-2 py-0.5 rounded-full font-bold">ห่าง ${i.dist.toFixed(2)} กม.</span>
                             <span class="text-[10px] text-gray-400 truncate max-w-[120px]">${i.address}</span>
                         </div>
                     </div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=${i.lat},${i.lon}" target="_blank"
+                    <a href="https://www.google.com/maps?q=${i.lat},${i.lon}" target="_blank"
                         class="bg-[#3b82f6] text-white w-10 h-10 rounded-lg flex items-center justify-center text-sm shadow-md hover:scale-110 transition">
                         <i class="fa-solid fa-location-arrow"></i>
                     </a>
