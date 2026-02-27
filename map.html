@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asthma Care - Map</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap');
+        body { font-family: 'Kanit', sans-serif; }
+        #map { height: calc(100vh - 180px); width: 100%; z-index: 1; }
+        
+        /* Custom Marker Style */
+        .custom-marker {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        /* Legend Bar */
+        .legend-bar {
+            height: 10px;
+            border-radius: 5px;
+            background: linear-gradient(to right, #3b82f6 0%, #22c55e 25%, #eab308 50%, #f97316 75%, #ef4444 100%);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-gray-800">
+
+    <header class="bg-blue-600 text-white p-5 sticky top-0 z-50 shadow-md flex justify-between items-center">
+        <a href="index.html" class="p-2 -ml-2 active:scale-90 transition-transform">
+            <i class="fa-solid fa-chevron-left text-xl"></i>
+        </a>
+        <h1 class="text-lg font-medium">แผนที่คุณภาพอากาศ</h1>
+        <div class="w-8"></div>
+    </header>
+
+    <main class="relative">
+        <div id="map"></div>
+
+        <div class="fixed bottom-24 left-0 right-0 px-5 z-[40]">
+            <div class="bg-white/90 backdrop-blur-sm p-4 rounded-2xl shadow-lg border border-gray-100">
+                <div class="flex justify-between text-[10px] mb-2 font-bold text-gray-600 uppercase">
+                    <span>ดีมาก</span><span>ดี</span><span>ปานกลาง</span><span>เริ่มมีผล</span><span>อันตราย</span>
+                </div>
+                <div class="legend-bar w-full"></div>
+            </div>
+        </div>
+    </main>
+
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around p-3 pb-6 z-50">
+        <a href="index.html" class="flex flex-col items-center text-gray-400"><i class="fa-solid fa-house text-xl mb-1"></i><span class="text-[10px] font-bold">หน้าหลัก</span></a>
+        <a href="assessment.html" class="flex flex-col items-center text-gray-400"><i class="fa-solid fa-list-ul text-xl mb-1"></i><span class="text-[10px] font-bold">ประเมิน</span></a>
+        <a href="location.html" class="flex flex-col items-center text-blue-600"><i class="fa-solid fa-location-dot text-xl mb-1"></i><span class="text-[10px] font-bold">แผนที่</span></a>
+    </nav>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // เริ่มต้นแผนที่ (Center ที่ประเทศไทย)
+        const map = L.map('map').setView([13.7367, 100.5231], 6);
+
+        // ใช้ Map Tile จาก OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // ฟังก์ชันเลือกสีตามค่า AQI (มาตรฐาน Air4Thai)
+        function getColor(aqi) {
+            if (aqi <= 25) return "#3b82f6"; // ฟ้า - ดีมาก
+            if (aqi <= 50) return "#22c55e"; // เขียว - ดี
+            if (aqi <= 100) return "#eab308"; // เหลือง - ปานกลาง
+            if (aqi <= 200) return "#f97316"; // ส้ม - เริ่มมีผล
+            return "#ef4444"; // แดง - มีผลกระทบมาก
+        }
+
+        async function fetchAir4ThaiData() {
+            try {
+                // ดึงข้อมูลจาก API ของ Air4Thai (Direct Link สำหรับ JSON ข้อมูลรวมทุกสถานี)
+                const response = await fetch('http://air4thai.pcd.go.th/for_web/get_report.php');
+                const data = await response.json();
+
+                if (data && data.stations) {
+                    data.stations.forEach(station => {
+                        const lat = station.lat;
+                        const lng = station.long;
+                        const aqi = parseInt(station.LastUpdate.aqi.aqi);
+                        const area = station.areaTH;
+                        const pm25 = station.LastUpdate.PM25.value;
+
+                        if (lat && lng) {
+                            // สร้าง Custom Marker (วงกลมมีตัวเลข)
+                            const icon = L.divIcon({
+                                className: 'custom-div-icon',
+                                html: `<div class="custom-marker" style="background-color: ${getColor(aqi)};">${aqi}</div>`,
+                                iconSize: [30, 30],
+                                iconAnchor: [15, 15]
+                            });
+
+                            // เพิ่ม Marker ลงบนแผนที่
+                            L.marker([lat, lng], { icon: icon })
+                                .addTo(map)
+                                .bindPopup(`
+                                    <div class="font-kanit">
+                                        <b class="text-blue-600">${area}</b><br>
+                                        ค่า AQI: <span class="font-bold" style="color:${getColor(aqi)}">${aqi}</span><br>
+                                        PM 2.5: ${pm25} µg/m³
+                                    </div>
+                                `);
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching Air4Thai data:', error);
+                // กรณีติด CORS หรือดึงไม่ได้ ให้ลองใช้ Mockup หรือแสดงแจ้งเตือน
+                alert("ไม่สามารถดึงข้อมูลจาก Air4Thai ได้ในขณะนี้");
+            }
+        }
+
+        // เรียกใช้งานฟังก์ชัน
+        window.onload = () => {
+            fetchAir4ThaiData();
+        };
+    </script>
+</body>
+</html>
