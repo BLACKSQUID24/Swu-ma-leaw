@@ -13,14 +13,15 @@
         .risk-bar-bg { height: 12px; border-radius: 6px; background: linear-gradient(to right, #3b82f6 0%, #22c55e 25%, #eab308 50%, #f97316 75%, #ef4444 100%); }
         .risk-pointer { transition: left 0.5s ease; }
         
-        /* Side Menu Animation */
         #side-menu { transition: transform 0.3s ease-in-out; transform: translateX(-100%); }
         #side-menu.active { transform: translateX(0); }
         .menu-overlay { display: none; background: rgba(0,0,0,0.5); }
         .menu-overlay.active { display: block; }
-
-        /* ป้องกันการเลื่อนจอเมื่อ Modal เปิดอยู่ */
         .modal-open { overflow: hidden; }
+
+        /* ซ่อนลูกศรในช่อง input number เพื่อความสวยงาม */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     </style>
 </head>
 <body class="bg-slate-50 pb-32 text-gray-800">
@@ -65,14 +66,12 @@
                 </div>
             </div>
 
-            <a href="history.html" class="block flex items-center gap-3 p-4 hover:bg-blue-50 rounded-2xl transition-all">
-                <i class="fa-solid fa-clock-rotate-left text-blue-600"></i>
-                <span class="font-medium text-sm">ประวัติการประเมิน</span>
+            <a href="history.html" class="block flex items-center gap-3 p-4 hover:bg-blue-50 rounded-2xl transition-all font-medium text-sm">
+                <i class="fa-solid fa-clock-rotate-left text-blue-600"></i> ประวัติการประเมิน
             </a>
             <hr class="border-gray-100">
-            <button onclick="logout()" id="logout-btn" class="w-full flex items-center gap-3 p-4 text-red-500 hover:bg-red-50 rounded-2xl transition-all">
-                <i class="fa-solid fa-right-from-bracket"></i>
-                <span class="font-medium text-sm">ออกจากระบบ</span>
+            <button onclick="logout()" id="logout-btn" class="w-full flex items-center gap-3 p-4 text-red-500 hover:bg-red-50 rounded-2xl transition-all font-medium text-sm">
+                <i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบ
             </button>
         </nav>
     </div>
@@ -97,13 +96,13 @@
                     <span class="text-[10px] text-gray-400 font-bold uppercase mt-1">PM 2.5 (µg/m³)</span>
                 </div>
             </div>
-            <h2 id="aqi-status-text" class="text-2xl font-bold text-gray-400 mb-4">รอข้อมูล...</h2>
-            <div class="relative pt-4">
+            <h2 id="aqi-status-text" class="text-2xl font-bold text-gray-400 mb-4 tracking-tight">รอข้อมูล...</h2>
+            <div class="relative pt-4 px-2">
                 <div class="flex justify-between text-[10px] mb-1 font-bold">
                     <span>ดีมาก</span><span>ดี</span><span>ปานกลาง</span><span>เริ่มมีผล</span><span>อันตราย</span>
                 </div>
                 <div class="risk-bar-bg w-full relative">
-                    <div id="risk-pointer" class="risk-pointer absolute top-[-5px] w-4 h-4 bg-white border-2 border-gray-800 rounded-full shadow-md" style="left: 0%"></div>
+                    <div id="risk-pointer" class="risk-pointer absolute top-[-5px] w-5 h-5 bg-white border-2 border-slate-700 rounded-full shadow-md" style="left: 0%"></div>
                 </div>
             </div>
         </div>
@@ -158,13 +157,13 @@
                 <p class="text-xs text-gray-400 mt-1">กรุณากรอกข้อมูลเพื่อเริ่มใช้งานแอป</p>
             </div>
             
-            <div class="space-y-3 mb-8">
+            <div class="space-y-3 mb-8 text-left">
                 <input type="text" id="username" placeholder="ชื่อเล่นของคุณ" class="w-full bg-slate-50 border border-gray-100 p-4 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all">
                 
                 <div class="grid grid-cols-3 gap-2">
-                    <input type="number" id="user-age" placeholder="อายุ" class="w-full bg-slate-50 border border-gray-100 p-4 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all">
-                    <input type="number" id="user-height" placeholder="สูง" class="w-full bg-slate-50 border border-gray-100 p-4 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all">
-                    <input type="number" id="user-weight" placeholder="หนัก" class="w-full bg-slate-50 border border-gray-100 p-4 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all">
+                    <input type="number" id="user-age" min="1" inputmode="numeric" placeholder="อายุ" class="num-input w-full bg-slate-50 border border-gray-100 p-4 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all">
+                    <input type="number" id="user-height" min="1" inputmode="numeric" placeholder="สูง" class="num-input w-full bg-slate-50 border border-gray-100 p-4 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all">
+                    <input type="number" id="user-weight" min="1" inputmode="numeric" placeholder="หนัก" class="num-input w-full bg-slate-50 border border-gray-100 p-4 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all">
                 </div>
 
                 <input type="text" id="user-meds" placeholder="ยาพ่นที่ใช้บ่อย (ถ้ามี)" class="w-full bg-slate-50 border border-gray-100 p-4 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all">
@@ -185,12 +184,31 @@
     <script>
         const CIRCUMFERENCE = 534;
 
+        // --- ระบบป้องกันเลขติดลบและพิมพ์อักษรแปลกๆ ---
+        function setupNumericInputs() {
+            const inputs = document.querySelectorAll('.num-input');
+            inputs.forEach(input => {
+                // บล็อกเครื่องหมายลบ (-), บวก (+), และตัว e (สัญลักษณ์วิทยาศาสตร์)
+                input.addEventListener('keydown', (e) => {
+                    if (['-', '+', 'e', 'E'].includes(e.key)) {
+                        e.preventDefault();
+                    }
+                });
+
+                // ตรวจสอบหลังจากกรอก (กันการ Paste ค่าติดลบ)
+                input.addEventListener('input', () => {
+                    if (input.value < 0) {
+                        input.value = '';
+                    }
+                });
+            });
+        }
+
         function toggleMenu() {
             document.getElementById('side-menu').classList.toggle('active');
             document.getElementById('menu-overlay').classList.toggle('active');
         }
 
-        // --- แก้ไข: ระบบตรวจสอบสถานะ Login แบบบังคับหน้าจอ ---
         function checkLoginStatus() {
             const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
             const modal = document.getElementById('login-modal');
@@ -199,11 +217,10 @@
                 modal.classList.add('hidden');
                 document.body.classList.remove('modal-open');
                 
-                // อัปเดต UI ข้อมูลส่วนตัวใน Side Menu
                 document.getElementById('login-status-text').innerText = localStorage.getItem('userName');
-                document.getElementById('display-age').innerText = localStorage.getItem('userAge');
-                document.getElementById('display-height').innerText = localStorage.getItem('userHeight');
-                document.getElementById('display-weight').innerText = localStorage.getItem('userWeight');
+                document.getElementById('display-age').innerText = localStorage.getItem('userAge') + " ปี";
+                document.getElementById('display-height').innerText = localStorage.getItem('userHeight') + " ซม.";
+                document.getElementById('display-weight').innerText = localStorage.getItem('userWeight') + " กก.";
                 document.getElementById('display-meds').innerText = localStorage.getItem('userMeds');
             } else {
                 modal.classList.remove('hidden');
@@ -212,41 +229,41 @@
         }
 
         function handleLogin() {
-            const user = document.getElementById('username').value;
+            const user = document.getElementById('username').value.trim();
             const age = document.getElementById('user-age').value;
             const height = document.getElementById('user-height').value;
             const weight = document.getElementById('user-weight').value;
-            const meds = document.getElementById('user-meds').value;
+            const meds = document.getElementById('user-meds').value.trim();
 
-            if(user.trim() !== "") {
-                localStorage.setItem('isLoggedIn', 'true');
-                localStorage.setItem('userName', user);
-                localStorage.setItem('userAge', age || '--');
-                localStorage.setItem('userHeight', height || '--');
-                localStorage.setItem('userWeight', weight || '--');
-                localStorage.setItem('userMeds', meds || 'ไม่มีข้อมูล');
-
-                checkLoginStatus();
-                alert('ยินดีต้อนรับ คุณ ' + user);
-            } else {
-                alert('กรุณากรอกชื่ออย่างน้อย 1 อย่างครับ');
+            if(!user) {
+                alert('กรุณากรอกชื่อเล่นครับ');
+                return;
             }
+
+            // ตรวจสอบความถูกต้องของตัวเลขก่อนบันทึก
+            if(age <= 0 || height <= 0 || weight <= 0) {
+                alert('กรุณากรอก อายุ ส่วนสูง และน้ำหนัก ให้ถูกต้อง (ต้องมากกว่า 0)');
+                return;
+            }
+
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('userName', user);
+            localStorage.setItem('userAge', age);
+            localStorage.setItem('userHeight', height);
+            localStorage.setItem('userWeight', weight);
+            localStorage.setItem('userMeds', meds || 'ไม่มีข้อมูล');
+
+            checkLoginStatus();
+            alert('ลงทะเบียนสำเร็จ! ยินดีต้อนรับ คุณ ' + user);
         }
 
         function logout() {
-            if(confirm('ยืนยันการออกจากระบบ? ข้อมูลประวัติจะยังอยู่แต่ข้อมูลส่วนตัวจะถูกล้าง')) {
-                localStorage.removeItem('isLoggedIn');
-                localStorage.removeItem('userName');
-                localStorage.removeItem('userAge');
-                localStorage.removeItem('userHeight');
-                localStorage.removeItem('userWeight');
-                localStorage.removeItem('userMeds');
-                checkLoginStatus();
-                toggleMenu();
+            if(confirm('ยืนยันการออกจากระบบ? ข้อมูลส่วนตัวจะถูกล้าง')) {
+                localStorage.clear();
+                window.location.reload();
             }
         }
 
-        // --- ระบบ AQI และตำแหน่ง ---
         function initLocation() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(fetchData, () => { 
@@ -295,8 +312,9 @@
         }
 
         window.onload = () => {
-            checkLoginStatus(); // เช็คก่อน
-            initLocation();     // โหลดอากาศตามมา
+            setupNumericInputs(); // เรียกใช้ระบบตรวจสอบตัวเลข
+            checkLoginStatus(); 
+            initLocation(); 
         };
     </script>
 </body>
