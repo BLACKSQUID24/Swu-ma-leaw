@@ -18,9 +18,10 @@
         #side-menu.active { transform: translateX(0); }
         .menu-overlay { display: none; background: rgba(0,0,0,0.5); }
         .menu-overlay.active { display: block; }
+
+        /* ป้องกันการเลื่อนจอเมื่อ Modal เปิดอยู่ */
+        .modal-open { overflow: hidden; }
     </style>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2563eb">
 </head>
 <body class="bg-slate-50 pb-32 text-gray-800">
 
@@ -32,17 +33,17 @@
             <button onclick="toggleMenu()" class="text-gray-500"><i class="fa-solid fa-xmark text-xl"></i></button>
         </div>
         <nav class="space-y-4">
-            <button onclick="showLogin()" class="w-full flex items-center gap-3 p-4 hover:bg-blue-50 rounded-2xl transition-all border border-transparent hover:border-blue-100">
+            <div id="user-profile-btn" class="w-full flex items-center gap-3 p-4 bg-blue-50 rounded-2xl border border-blue-100">
                 <i class="fa-solid fa-user-circle text-2xl text-blue-600"></i>
                 <div class="text-left">
                     <p id="login-status-text" class="font-bold text-sm">เข้าสู่ระบบ</p>
-                    <p id="login-sub-text" class="text-[10px] text-gray-400">ซิงค์ข้อมูลประวัติของคุณ</p>
+                    <p id="login-sub-text" class="text-[10px] text-gray-400">กำลังใช้งาน</p>
                 </div>
-            </button>
+            </div>
 
-            <div id="personal-info-section" class="hidden mx-1 p-4 bg-blue-50/50 rounded-2xl border border-blue-100">
+            <div id="personal-info-section" class="mx-1 p-4 bg-slate-50 rounded-2xl border border-gray-100">
                 <h3 class="text-[11px] font-bold text-blue-600 mb-3 flex items-center gap-2">
-                    <i class="fa-solid fa-id-card"></i> ข้อมูลส่วนบุคคล
+                    <i class="fa-solid fa-id-card"></i> ข้อมูลของคุณ
                 </h3>
                 <div class="grid grid-cols-3 gap-2 text-center mb-3">
                     <div class="bg-white p-2 rounded-lg shadow-sm">
@@ -50,17 +51,17 @@
                         <p id="display-age" class="text-xs font-bold">--</p>
                     </div>
                     <div class="bg-white p-2 rounded-lg shadow-sm">
-                        <p class="text-[9px] text-gray-400">สูง (ซม.)</p>
+                        <p class="text-[9px] text-gray-400">สูง</p>
                         <p id="display-height" class="text-xs font-bold">--</p>
                     </div>
                     <div class="bg-white p-2 rounded-lg shadow-sm">
-                        <p class="text-[9px] text-gray-400">หนัก (กก.)</p>
+                        <p class="text-[9px] text-gray-400">หนัก</p>
                         <p id="display-weight" class="text-xs font-bold">--</p>
                     </div>
                 </div>
                 <div class="bg-white p-2 rounded-lg shadow-sm">
-                    <p class="text-[9px] text-gray-400">ยาที่ใช้ประจำ:</p>
-                    <p id="display-meds" class="text-[11px] font-medium text-blue-800 italic truncate">--</p>
+                    <p class="text-[9px] text-gray-400">ยาประจำตัว:</p>
+                    <p id="display-meds" class="text-[11px] font-medium text-blue-800 truncate">--</p>
                 </div>
             </div>
 
@@ -69,7 +70,7 @@
                 <span class="font-medium text-sm">ประวัติการประเมิน</span>
             </a>
             <hr class="border-gray-100">
-            <button onclick="logout()" id="logout-btn" class="hidden w-full flex items-center gap-3 p-4 text-red-500 hover:bg-red-50 rounded-2xl transition-all">
+            <button onclick="logout()" id="logout-btn" class="w-full flex items-center gap-3 p-4 text-red-500 hover:bg-red-50 rounded-2xl transition-all">
                 <i class="fa-solid fa-right-from-bracket"></i>
                 <span class="font-medium text-sm">ออกจากระบบ</span>
             </button>
@@ -125,21 +126,18 @@
                 </div>
                 <span class="font-bold text-[10px]">แบบประเมิน</span>
             </a>
-
             <a href="map.html" class="bg-white py-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center active:scale-95 transition-all">
                 <div class="w-10 h-10 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center mb-2">
                     <i class="fa-solid fa-map-location-dot"></i>
                 </div>
                 <span class="font-bold text-[10px]">แผนที่ฝุ่น</span>
             </a>
-
             <a href="location.html" class="bg-white py-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center active:scale-95 transition-all">
                 <div class="w-10 h-10 rounded-full bg-orange-100 text-orange-500 flex items-center justify-center mb-2">
                     <i class="fa-solid fa-pills"></i>
                 </div>
                 <span class="font-bold text-[10px]">ร้านยา</span>
             </a>
-
             <button onclick="confirmEmergencyCall()" class="bg-red-600 py-4 rounded-2xl shadow-lg flex flex-col items-center justify-center text-white active:scale-95 transition-all">
                 <div class="w-10 h-10 rounded-full bg-white text-red-600 flex items-center justify-center mb-2">
                     <i class="fa-solid fa-phone-flip animate-pulse"></i>
@@ -149,66 +147,68 @@
         </div>
     </main>
 
-    <div id="login-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/50" onclick="closeLogin()"></div>
-        <div class="bg-white rounded-[2rem] p-6 z-10 w-full max-w-sm text-center shadow-2xl overflow-y-auto max-h-[90vh]">
-            <h3 class="text-xl font-bold mb-4 text-blue-600">ลงทะเบียนเข้าใช้งาน</h3>
-            <p class="text-xs text-gray-400 mb-6">ข้อมูลเหล่านี้จะช่วยให้เราประเมินอาการได้แม่นยำขึ้น</p>
+    <div id="login-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-md">
+        <div class="absolute inset-0 bg-blue-900/40"></div>
+        <div class="bg-white rounded-[2.5rem] p-8 z-10 w-full max-w-sm text-center shadow-2xl relative overflow-hidden">
+            <div class="mb-6">
+                <div class="bg-blue-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <i class="fa-solid fa-user-plus text-2xl text-blue-600"></i>
+                </div>
+                <h3 class="text-2xl font-black text-gray-800">ลงทะเบียน</h3>
+                <p class="text-xs text-gray-400 mt-1">กรุณากรอกข้อมูลเพื่อเริ่มใช้งานแอป</p>
+            </div>
             
-            <div class="space-y-3 mb-6">
-                <input type="text" id="username" placeholder="ชื่อผู้ใช้งาน" class="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+            <div class="space-y-3 mb-8">
+                <input type="text" id="username" placeholder="ชื่อเล่นของคุณ" class="w-full bg-slate-50 border border-gray-100 p-4 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all">
                 
                 <div class="grid grid-cols-3 gap-2">
-                    <input type="number" id="user-age" placeholder="อายุ" class="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm">
-                    <input type="number" id="user-height" placeholder="ส่วนสูง" class="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm">
-                    <input type="number" id="user-weight" placeholder="น้ำหนัก" class="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                    <input type="number" id="user-age" placeholder="อายุ" class="w-full bg-slate-50 border border-gray-100 p-4 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all">
+                    <input type="number" id="user-height" placeholder="สูง" class="w-full bg-slate-50 border border-gray-100 p-4 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all">
+                    <input type="number" id="user-weight" placeholder="หนัก" class="w-full bg-slate-50 border border-gray-100 p-4 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all">
                 </div>
 
-                <input type="text" id="user-meds" placeholder="ยาพ่นหรือยาที่ใช้ประจำ" class="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm">
-                <input type="password" id="password" placeholder="รหัสผ่าน (ชั่วคราว)" class="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                <input type="text" id="user-meds" placeholder="ยาพ่นที่ใช้บ่อย (ถ้ามี)" class="w-full bg-slate-50 border border-gray-100 p-4 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all">
             </div>
 
-            <button onclick="handleLogin()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold mb-3 shadow-lg shadow-blue-200">บันทึกและเข้าสู่ระบบ</button>
-            <button onclick="closeLogin()" class="text-gray-400 text-sm">ไว้ภายหลัง</button>
+            <button onclick="handleLogin()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-xl shadow-blue-200 active:scale-95 transition-all">บันทึกข้อมูลและเริ่มต้น</button>
+            <p class="text-[10px] text-red-400 mt-4">* ข้อมูลของคุณจะถูกเก็บไว้ในเครื่องนี้เท่านั้น</p>
         </div>
     </div>
 
     <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around p-3 pb-6 z-50">
-        <a href="index.html" class="flex flex-col items-center text-blue-600">
-            <i class="fa-solid fa-house text-xl mb-1"></i>
-            <span class="text-[10px] font-bold">หน้าหลัก</span>
-        </a>
-        <a href="assessment.html" class="flex flex-col items-center text-gray-400">
-            <i class="fa-solid fa-list-ul text-xl mb-1"></i>
-            <span class="text-[10px] font-bold">ประเมิน</span>
-        </a>
-        <a href="map.html" class="flex flex-col items-center text-gray-400">
-            <i class="fa-solid fa-map-location-dot text-xl mb-1"></i>
-            <span class="text-[10px] font-bold">แผนที่</span>
-        </a>
-        <a href="location.html" class="flex flex-col items-center text-gray-400">
-            <i class="fa-solid fa-location-dot text-xl mb-1"></i>
-            <span class="text-[10px] font-bold">ร้านยา</span>
-        </a>
+        <a href="index.html" class="flex flex-col items-center text-blue-600"><i class="fa-solid fa-house text-xl mb-1"></i><span class="text-[10px] font-bold">หน้าหลัก</span></a>
+        <a href="assessment.html" class="flex flex-col items-center text-gray-400"><i class="fa-solid fa-list-ul text-xl mb-1"></i><span class="text-[10px] font-bold">ประเมิน</span></a>
+        <a href="map.html" class="flex flex-col items-center text-gray-400"><i class="fa-solid fa-map-location-dot text-xl mb-1"></i><span class="text-[10px] font-bold">แผนที่</span></a>
+        <a href="location.html" class="flex flex-col items-center text-gray-400"><i class="fa-solid fa-location-dot text-xl mb-1"></i><span class="text-[10px] font-bold">ร้านยา</span></a>
     </nav>
 
     <script>
         const CIRCUMFERENCE = 534;
 
-        // --- ระบบเมนูและ Login ---
         function toggleMenu() {
             document.getElementById('side-menu').classList.toggle('active');
             document.getElementById('menu-overlay').classList.toggle('active');
         }
 
-        function showLogin() {
-            if(localStorage.getItem('isLoggedIn') === 'true') return;
-            toggleMenu();
-            document.getElementById('login-modal').classList.remove('hidden');
-        }
-
-        function closeLogin() {
-            document.getElementById('login-modal').classList.add('hidden');
+        // --- แก้ไข: ระบบตรวจสอบสถานะ Login แบบบังคับหน้าจอ ---
+        function checkLoginStatus() {
+            const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            const modal = document.getElementById('login-modal');
+            
+            if(loggedIn) {
+                modal.classList.add('hidden');
+                document.body.classList.remove('modal-open');
+                
+                // อัปเดต UI ข้อมูลส่วนตัวใน Side Menu
+                document.getElementById('login-status-text').innerText = localStorage.getItem('userName');
+                document.getElementById('display-age').innerText = localStorage.getItem('userAge');
+                document.getElementById('display-height').innerText = localStorage.getItem('userHeight');
+                document.getElementById('display-weight').innerText = localStorage.getItem('userWeight');
+                document.getElementById('display-meds').innerText = localStorage.getItem('userMeds');
+            } else {
+                modal.classList.remove('hidden');
+                document.body.classList.add('modal-open');
+            }
         }
 
         function handleLogin() {
@@ -219,7 +219,6 @@
             const meds = document.getElementById('user-meds').value;
 
             if(user.trim() !== "") {
-                // เก็บข้อมูลลง LocalStorage
                 localStorage.setItem('isLoggedIn', 'true');
                 localStorage.setItem('userName', user);
                 localStorage.setItem('userAge', age || '--');
@@ -228,51 +227,22 @@
                 localStorage.setItem('userMeds', meds || 'ไม่มีข้อมูล');
 
                 checkLoginStatus();
-                closeLogin();
                 alert('ยินดีต้อนรับ คุณ ' + user);
             } else {
-                alert('กรุณากรอกชื่อผู้ใช้งาน');
+                alert('กรุณากรอกชื่ออย่างน้อย 1 อย่างครับ');
             }
         }
 
         function logout() {
-            if(confirm('ยืนยันการออกจากระบบ? ข้อมูลส่วนตัวในหน้านี้จะหายไป')) {
-                localStorage.clear(); // ล้างข้อมูลทั้งหมด
+            if(confirm('ยืนยันการออกจากระบบ? ข้อมูลประวัติจะยังอยู่แต่ข้อมูลส่วนตัวจะถูกล้าง')) {
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('userName');
+                localStorage.removeItem('userAge');
+                localStorage.removeItem('userHeight');
+                localStorage.removeItem('userWeight');
+                localStorage.removeItem('userMeds');
                 checkLoginStatus();
                 toggleMenu();
-            }
-        }
-
-        function checkLoginStatus() {
-            const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
-            const statusText = document.getElementById('login-status-text');
-            const subText = document.getElementById('login-sub-text');
-            const logoutBtn = document.getElementById('logout-btn');
-            const infoSection = document.getElementById('personal-info-section');
-            
-            if(loggedIn) {
-                statusText.innerText = localStorage.getItem('userName');
-                subText.innerText = "กำลังใช้งาน";
-                logoutBtn.classList.remove('hidden');
-                
-                // แสดงและอัปเดตข้อมูลส่วนบุคคล
-                infoSection.classList.remove('hidden');
-                document.getElementById('display-age').innerText = localStorage.getItem('userAge');
-                document.getElementById('display-height').innerText = localStorage.getItem('userHeight');
-                document.getElementById('display-weight').innerText = localStorage.getItem('userWeight');
-                document.getElementById('display-meds').innerText = localStorage.getItem('userMeds');
-            } else {
-                statusText.innerText = 'เข้าสู่ระบบ';
-                subText.innerText = "ซิงค์ข้อมูลประวัติของคุณ";
-                logoutBtn.classList.add('hidden');
-                infoSection.classList.add('hidden');
-            }
-        }
-
-        // --- ระบบฉุกเฉิน ---
-        function confirmEmergencyCall() {
-            if (confirm("⚠️ คุณต้องการโทรสายด่วนฉุกเฉิน 1669 ใช่หรือไม่?")) {
-                window.location.href = "tel:1669";
             }
         }
 
@@ -318,9 +288,15 @@
             document.getElementById('checklist-text').innerText = "สิ่งที่ต้องทำ: " + config.check;
         }
 
+        function confirmEmergencyCall() {
+            if (confirm("⚠️ คุณต้องการโทรสายด่วนฉุกเฉิน 1669 ใช่หรือไม่?")) {
+                window.location.href = "tel:1669";
+            }
+        }
+
         window.onload = () => {
-            checkLoginStatus();
-            initLocation();
+            checkLoginStatus(); // เช็คก่อน
+            initLocation();     // โหลดอากาศตามมา
         };
     </script>
 </body>
