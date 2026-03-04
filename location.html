@@ -76,7 +76,7 @@
 
         async function fetchPharmacies(uLat, uLon, keyword = "") {
             updateStatus("กำลังค้นหาร้านยาใกล้คุณ...", "loading");
-            const radius = 20000; 
+            const radius = 5000; 
             const areaQuery = keyword ? `["name"~"${keyword}"](around:${radius},${uLat},${uLon})` : `(around:${radius},${uLat},${uLon})`;
             const query = `[out:json];(node["amenity"="pharmacy"]${areaQuery};node["shop"="drugstore"]${areaQuery};way["amenity"="pharmacy"]${areaQuery};way["shop"="drugstore"]${areaQuery};);out center;`;
             
